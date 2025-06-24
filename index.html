@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grande Clássico das Lendas - Apostas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #222, #444);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    .logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+      margin-top: 20px;
+    }
+    .logos img {
+      height: 80px;
+    }
+    .odds-table {
+      width: 100%;
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #fff;
+      color: #000;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .odds-table h2 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+    }
+    input[type="number"] {
+      width: 80px;
+      padding: 5px;
+    }
+    .resultado {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Grande Clássico das Lendas do Futebol</h1>
+  <p>NetDrp 🆚 Helpnet</p>
+  
+  <div class="logos">
+    <div>
+      <img src="https://i.imgur.com/tTVd3Rp.png" alt="Logo NetDrp">
+      <p>NetDrp</p>
+    </div>
+    <div>
+      <img src="https://i.imgur.com/vP0Q2mG.png" alt="Logo Helpnet">
+      <p>Helpnet</p>
+    </div>
+  </div>
+
+  <div class="odds-table">
+    <h2>Simulador de Apostas</h2>
+    <table>
+      <tr>
+        <th>Resultado</th>
+        <th>Odd</th>
+        <th>Valor da Aposta (R$)</th>
+      </tr>
+      <tr>
+        <td>Vitória NetDrp</td>
+        <td>2.30</td>
+        <td><input type="number" id="aposta1" value="0"></td>
+      </tr>
+      <tr>
+        <td>Vitória Helpnet</td>
+        <td>2.70</td>
+        <td><input type="number" id="aposta2" value="0"></td>
+      </tr>
+      <tr>
+        <td>Empate</td>
+        <td>3.10</td>
+        <td><input type="number" id="aposta3" value="0"></td>
+      </tr>
+    </table>
+    <button onclick="calcularRetorno()">Calcular Retorno</button>
+    <div class="resultado" id="resultado"></div>
+  </div>
+
+  <script>
+    function calcularRetorno() {
+      const aposta1 = parseFloat(document.getElementById('aposta1').value || 0);
+      const aposta2 = parseFloat(document.getElementById('aposta2').value || 0);
+      const aposta3 = parseFloat(document.getElementById('aposta3').value || 0);
+
+      const retorno1 = aposta1 * 2.30;
+      const retorno2 = aposta2 * 2.70;
+      const retorno3 = aposta3 * 3.10;
+
+      let mensagem = `Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>` +
+                     `Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>` +
+                     `Se houver empate: R$ ${retorno3.toFixed(2)}`;
+
+      document.getElementById('resultado').innerHTML = mensagem;
+    }
+  </script>
+</body>
+</html>
