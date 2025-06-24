@@ -71,7 +71,7 @@
   </div>
 
   <div class="odds-table">
-    <h2>Faça sua simulação na Help Net ou Net DRP </h2>
+    <h2>Faça sua simulação na Help Net ou Net DRP</h2>
     <table>
       <tr>
         <th>Resultado</th>
@@ -93,6 +93,11 @@
         <td>3.10</td>
         <td><input type="number" id="aposta3" value="0"></td>
       </tr>
+      <tr>
+        <td>Jogo Não Acontece</td>
+        <td>8.00</td>
+        <td><input type="number" id="aposta4" value="0"></td>
+      </tr>
     </table>
     <button onclick="calcularRetorno()">Calcular Retorno</button>
     <div class="resultado" id="resultado"></div>
@@ -103,14 +108,17 @@
       const aposta1 = parseFloat(document.getElementById('aposta1').value || 0);
       const aposta2 = parseFloat(document.getElementById('aposta2').value || 0);
       const aposta3 = parseFloat(document.getElementById('aposta3').value || 0);
+      const aposta4 = parseFloat(document.getElementById('aposta4').value || 0);
 
       const retorno1 = aposta1 * 2.30;
       const retorno2 = aposta2 * 2.70;
       const retorno3 = aposta3 * 3.10;
+      const retorno4 = aposta4 * 8.00;
 
       let mensagem = `Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>` +
                      `Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>` +
-                     `Se houver empate: R$ ${retorno3.toFixed(2)}`;
+                     `Se houver empate: R$ ${retorno3.toFixed(2)}<br>` +
+                     `Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}`;
 
       document.getElementById('resultado').innerHTML = mensagem;
     }
