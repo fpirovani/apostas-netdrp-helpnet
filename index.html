@@ -19,32 +19,48 @@
       gap: 50px;
       margin-top: 20px;
     }
-    .logos img { height: 80px; border-radius: 50%; background-color: white; }
+    .logos img {
+      height: 80px;
+      border-radius: 50%;
+      background-color: white;
+    }
     .odds-table {
       width: 100%;
-      max-width: 700px;
+      max-width: 600px;
       margin: 30px auto;
       background-color: #fff;
       color: #000;
       border-radius: 10px;
       padding: 20px;
     }
-    .odds-table h2 { margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; border-bottom: 1px solid #ccc; text-align: left; }
-    input[type="number"], input[type="text"] { padding: 5px; width: 95%; }
-    .resultado { margin-top: 20px; font-size: 1.05em; color: #007700; text-align: left; }
+    .odds-table h2 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+    }
+    input[type="number"], input[type="text"] {
+      padding: 5px;
+      width: 90%;
+    }
+    .resultado {
+      margin-top: 20px;
+      font-size: 1.1em;
+      color: #0f0;
+      text-align: left;
+    }
     .historico {
       margin-top: 30px;
       background: #333;
       padding: 15px;
       border-radius: 8px;
       text-align: left;
-      color: #fff;
     }
-    button { padding: 8px 14px; margin-top: 10px; cursor: pointer; }
-    .small { font-size: 0.9em; color: #ccc; }
-    #loading { display:none; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -64,231 +80,128 @@
 
   <div class="odds-table">
     <h2>Faça sua simulação na Help Net ou Net DRP</h2>
-
     <table>
-      <tr><th colspan="3">Nome do Apostador</th></tr>
-      <tr><td colspan="3"><input type="text" id="nome" placeholder="Digite seu nome"></td></tr>
-
-      <tr><th>Resultado</th><th>Odd</th><th>Valor da Aposta (R$)</th></tr>
-      <tr><td>Vitória NetDrp</td><td>9.80</td><td><input type="number" id="aposta1" min="0" step="0.01" value="0"></td></tr>
-      <tr><td>Vitória Helpnet</td><td>1.17</td><td><input type="number" id="aposta2" min="0" step="0.01" value="0"></td></tr>
-      <tr><td>Empate</td><td>3.10</td><td><input type="number" id="aposta3" min="0" step="0.01" value="0"></td></tr>
-      <tr><td>Jogo Não Acontece</td><td>8.00</td><td><input type="number" id="aposta4" min="0" step="0.01" value="0"></td></tr>
+      <tr>
+        <th colspan="3">Nome do Apostador</th>
+      </tr>
+      <tr>
+        <td colspan="3"><input type="text" id="nome" placeholder="Digite seu nome"></td>
+      </tr>
+      <tr>
+        <th>Resultado</th>
+        <th>Odd</th>
+        <th>Valor da Aposta (R$)</th>
+      </tr>
+      <tr>
+        <td>Vitória NetDrp</td>
+        <td>9.80</td>
+        <td><input type="number" id="aposta1" value="0"></td>
+      </tr>
+      <tr>
+        <td>Vitória Helpnet</td>
+        <td>1.17</td>
+        <td><input type="number" id="aposta2" value="0"></td>
+      </tr>
+      <tr>
+        <td>Empate</td>
+        <td>3.10</td>
+        <td><input type="number" id="aposta3" value="0"></td>
+      </tr>
+      <tr>
+        <td>Jogo Não Acontece</td>
+        <td>8.00</td>
+        <td><input type="number" id="aposta4" value="0"></td>
+      </tr>
     </table>
-
-    <div style="margin-top:12px;">
-      <button id="btnRegistrar">Registrar Aposta</button>
-      <button id="btnReset">Resetar Histórico (apaga planilha)</button>
-      <div id="loading">Aguarde... comunicando com a planilha.</div>
-    </div>
-
+    <button onclick="registrarAposta()">Registrar Aposta</button>
     <div class="resultado" id="resultado"></div>
   </div>
 
   <div class="historico" id="historico">
-    <h3>Histórico de Apostas (do Google Sheets)</h3>
-    <div id="listaApostas" class="small"></div>
+    <h3>Histórico de Apostas</h3>
+    <div id="listaApostas"></div>
     <h4>Quantidade de apostadores por odd:</h4>
-    <ul id="contagemOdds" class="small"></ul>
+    <ul id="contagemOdds"></ul>
   </div>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxGtvgC0CjGlfLDiJEFEXbyTNpUzxrJfcz7KNeDW6Aj4Sx08u8u9XuJnomuIcWKmc9w/exec"; // cole a URL gerada no Apps Script
+  <script>
+    let apostasRegistradas = JSON.parse(localStorage.getItem("apostasRegistradas")) || [];
+    let contagemOdds = JSON.parse(localStorage.getItem("contagemOdds")) || { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
 
-// Para buscar o histórico
-async function carregarHistorico() {
-  try {
-    const response = await fetch(API_URL);
-    const dados = await response.json();
-    console.log("Histórico:", dados);
-    // Aqui você pode preencher sua tabela HTML com os dados
-  } catch (error) {
-    console.error("Erro ao carregar histórico:", error);
-  }
-}
+    function registrarAposta() {
+      const nome = document.getElementById('nome').value.trim();
+      const aposta1 = parseFloat(document.getElementById('aposta1').value || 0);
+      const aposta2 = parseFloat(document.getElementById('aposta2').value || 0);
+      const aposta3 = parseFloat(document.getElementById('aposta3').value || 0);
+      const aposta4 = parseFloat(document.getElementById('aposta4').value || 0);
 
-// Para salvar um registro
-async function salvarRegistro(data, valor, descricao) {
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ data, valor, descricao })
-    });
-    const result = await response.json();
-    console.log("Registro salvo:", result);
-  } catch (error) {
-    console.error("Erro ao salvar registro:", error);
-  }
-}
+      if (!nome) {
+        alert("Digite o nome do apostador!");
+        return;
+      }
 
+      if (aposta1 + aposta2 + aposta3 + aposta4 === 0) {
+        alert("Digite pelo menos um valor de aposta!");
+        return;
+      }
 
-// Odds constantes
-const ODD1 = 9.80, ODD2 = 1.17, ODD3 = 3.10, ODD4 = 8.00;
+      const retorno1 = aposta1 * 9.80;
+      const retorno2 = aposta2 * 1.17;
+      const retorno3 = aposta3 * 3.10;
+      const retorno4 = aposta4 * 8.00;
 
-const btnRegistrar = document.getElementById("btnRegistrar");
-const btnReset = document.getElementById("btnReset");
-const loadingEl = document.getElementById("loading");
-
-btnRegistrar.addEventListener("click", registrarAposta);
-btnReset.addEventListener("click", resetarHistoricoConfirm);
-
-// Mostrar/ocultar carregando
-function setLoading(on) {
-  loadingEl.style.display = on ? "block" : "none";
-}
-
-// valida e registra, envia POST para Apps Script
-async function registrarAposta() {
-  const nome = document.getElementById('nome').value.trim();
-  const aposta1 = parseFloat(document.getElementById('aposta1').value || 0);
-  const aposta2 = parseFloat(document.getElementById('aposta2').value || 0);
-  const aposta3 = parseFloat(document.getElementById('aposta3').value || 0);
-  const aposta4 = parseFloat(document.getElementById('aposta4').value || 0);
-
-  if (!nome) { alert("Digite o nome do apostador!"); return; }
-  if (aposta1 + aposta2 + aposta3 + aposta4 === 0) { alert("Digite pelo menos um valor de aposta!"); return; }
-
-  const retorno1 = aposta1 * ODD1;
-  const retorno2 = aposta2 * ODD2;
-  const retorno3 = aposta3 * ODD3;
-  const retorno4 = aposta4 * ODD4;
-
-  document.getElementById('resultado').innerHTML = `
-    <strong>${escapeHtml(nome)}</strong><br>
-    Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>
-    Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>
-    Se houver empate: R$ ${retorno3.toFixed(2)}<br>
-    Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}
-  `;
-
-  // enviar para planilha
-  try {
-    setLoading(true);
-    const payload = { nome, aposta1, aposta2, aposta3, aposta4 };
-
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const text = await res.text();
-    // tenta parse JSON de resposta
-    let jsonResp = {};
-    try { jsonResp = JSON.parse(text); } catch(e) { jsonResp = { raw: text }; }
-
-    // limpar campos
-    document.getElementById('nome').value = "";
-    document.getElementById('aposta1').value = 0;
-    document.getElementById('aposta2').value = 0;
-    document.getElementById('aposta3').value = 0;
-    document.getElementById('aposta4').value = 0;
-
-    // recarregar histórico
-    await carregarHistorico();
-  } catch (err) {
-    alert("Erro ao comunicar com a planilha: " + err.toString());
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-}
-
-// Carrega o histórico via GET do Apps Script
-async function carregarHistorico() {
-  try {
-    setLoading(true);
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("Resposta inválida do servidor: " + res.status);
-    const data = await res.json(); // array de objetos conforme cabeçalho
-
-    // Data format: array de objetos: { nome: "...", aposta1: "...", ... }
-    const apostasRegistradas = [];
-    const contagem = { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
-
-    data.forEach(row => {
-      // Alguns valores podem vir como strings; convertendo para número
-      const n1 = parseFloat(row.aposta1) || 0;
-      const n2 = parseFloat(row.aposta2) || 0;
-      const n3 = parseFloat(row.aposta3) || 0;
-      const n4 = parseFloat(row.aposta4) || 0;
-
+      // Salvar aposta no histórico
       apostasRegistradas.push({
-        nome: row.nome || "(sem nome)",
-        apostas: [n1, n2, n3, n4],
-        timestamp: row.timestamp || ""
+        nome,
+        apostas: [aposta1, aposta2, aposta3, aposta4]
       });
 
-      if (n1 > 0) contagem.odd1++;
-      if (n2 > 0) contagem.odd2++;
-      if (n3 > 0) contagem.odd3++;
-      if (n4 > 0) contagem.odd4++;
-    });
+      // Atualizar contagem por odd
+      if (aposta1 > 0) contagemOdds.odd1++;
+      if (aposta2 > 0) contagemOdds.odd2++;
+      if (aposta3 > 0) contagemOdds.odd3++;
+      if (aposta4 > 0) contagemOdds.odd4++;
 
-    // Renderiza lista
-    const lista = document.getElementById('listaApostas');
-    if (apostasRegistradas.length === 0) {
-      lista.innerHTML = "<p class='small'>Nenhuma aposta registrada ainda.</p>";
-    } else {
-      lista.innerHTML = apostasRegistradas.map(a => {
-        const tsPart = a.timestamp ? ` <span class='small'>(${escapeHtml(a.timestamp)})</span>` : "";
-        return `<p><strong>${escapeHtml(a.nome)}</strong> → NetDrp: R$${a.apostas[0]} | Helpnet: R$${a.apostas[1]} | Empate: R$${a.apostas[2]} | Não acontece: R$${a.apostas[3]} ${tsPart}</p>`;
-      }).join("");
+      // Salvar no localStorage
+      localStorage.setItem("apostasRegistradas", JSON.stringify(apostasRegistradas));
+      localStorage.setItem("contagemOdds", JSON.stringify(contagemOdds));
+
+      // Exibir resultado individual
+      let mensagem = `<strong>${nome}</strong><br>
+        Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>
+        Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>
+        Se houver empate: R$ ${retorno3.toFixed(2)}<br>
+        Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}`;
+
+      document.getElementById('resultado').innerHTML = mensagem;
+
+      // Limpar campos
+      document.getElementById('nome').value = "";
+      document.getElementById('aposta1').value = 0;
+      document.getElementById('aposta2').value = 0;
+      document.getElementById('aposta3').value = 0;
+      document.getElementById('aposta4').value = 0;
+
+      atualizarHistorico();
     }
 
-    const contagemEl = document.getElementById('contagemOdds');
-    contagemEl.innerHTML = `
-      <li>Vitória NetDrp (9.80): ${contagem.odd1} apostadores</li>
-      <li>Vitória Helpnet (1.17): ${contagem.odd2} apostadores</li>
-      <li>Empate (3.10): ${contagem.odd3} apostadores</li>
-      <li>Jogo Não Acontece (8.00): ${contagem.odd4} apostadores</li>
-    `;
-  } catch (err) {
-    console.error("Erro ao carregar histórico:", err);
-    document.getElementById('listaApostas').innerHTML = "<p class='small'>Erro ao carregar histórico. Veja console.</p>";
-  } finally {
-    setLoading(false);
-  }
-}
+    function atualizarHistorico() {
+      const lista = document.getElementById('listaApostas');
+      lista.innerHTML = apostasRegistradas.map(a => {
+        return `<p><strong>${a.nome}</strong> → NetDrp: R$${a.apostas[0]} | Helpnet: R$${a.apostas[1]} | Empate: R$${a.apostas[2]} | Não acontece: R$${a.apostas[3]}</p>`;
+      }).join("");
 
-// Função para apagar todas as linhas da aba "Apostas" (cuidado)
-async function resetarHistoricoConfirm() {
-  if (!confirm("Tem certeza que deseja resetar o histórico? Isso apagará todas as apostas da planilha.")) return;
-  try {
-    setLoading(true);
-    // Chamamos um endpoint de reset que não existe no Apps Script atual.
-    // Como alternativa segura, podemos sobrescrever a planilha via POST com flag reset.
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ __action: "reset" })
-    });
-    // Nota: para que isto funcione, seria necessário adicionar no Apps Script suporte à ação __action: "reset".
-    // Sem esse suporte, esta chamada apenas adicionará uma linha com {__action: "reset"}.
-    alert("Reset solicitado. Se quiser realmente apagar, adicione suporte 'reset' no Apps Script ou apague manualmente a aba 'Apostas'.");
-    await carregarHistorico();
-  } catch (err) {
-    alert("Falha ao solicitar reset: " + err);
-  } finally {
-    setLoading(false);
-  }
-}
+      const contagem = document.getElementById('contagemOdds');
+      contagem.innerHTML = `
+        <li>Vitória NetDrp (9.80): ${contagemOdds.odd1} apostadores</li>
+        <li>Vitória Helpnet (1.17): ${contagemOdds.odd2} apostadores</li>
+        <li>Empate (3.10): ${contagemOdds.odd3} apostadores</li>
+        <li>Jogo Não Acontece (8.00): ${contagemOdds.odd4} apostadores</li>
+      `;
+    }
 
-// pequena função para escapar HTML ao mostrar nomes
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str).replace(/[&<>"']/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
-}
-
-// Ao carregar a página, busca o histórico
-window.addEventListener("load", () => {
-  if (API_URL.includes("COLE_AQUI")) {
-    document.getElementById('listaApostas').innerHTML = "<p class='small'>Substitua API_URL no código pela URL do App Script implantado (veja instruções).</p>";
-    return;
-  }
-  carregarHistorico();
-});
-</script>
+    // Carregar histórico ao abrir a página
+    atualizarHistorico();
+  </script>
 </body>
 </html>
