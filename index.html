@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Grande Clássico das Lendas - Apostas</title>
   <style>
     body {
@@ -32,9 +32,6 @@
       color: #000;
       border-radius: 10px;
       padding: 20px;
-    }
-    .odds-table h2 {
-      margin-bottom: 20px;
     }
     table {
       width: 100%;
@@ -79,129 +76,65 @@
   </div>
 
   <div class="odds-table">
-    <h2>Faça sua simulação na Help Net ou Net DRP</h2>
+    <h2>Faça sua simulação</h2>
     <table>
-      <tr>
-        <th colspan="3">Nome do Apostador</th>
-      </tr>
-      <tr>
-        <td colspan="3"><input type="text" id="nome" placeholder="Digite seu nome"></td>
-      </tr>
-      <tr>
-        <th>Resultado</th>
-        <th>Odd</th>
-        <th>Valor da Aposta (R$)</th>
-      </tr>
-      <tr>
-        <td>Vitória NetDrp</td>
-        <td>9.80</td>
-        <td><input type="number" id="aposta1" value="0"></td>
-      </tr>
-      <tr>
-        <td>Vitória Helpnet</td>
-        <td>1.17</td>
-        <td><input type="number" id="aposta2" value="0"></td>
-      </tr>
-      <tr>
-        <td>Empate</td>
-        <td>3.10</td>
-        <td><input type="number" id="aposta3" value="0"></td>
-      </tr>
-      <tr>
-        <td>Jogo Não Acontece</td>
-        <td>8.00</td>
-        <td><input type="number" id="aposta4" value="0"></td>
-      </tr>
+      <tr><th colspan="3">Nome do Apostador</th></tr>
+      <tr><td colspan="3"><input type="text" id="nome" placeholder="Digite seu nome"></td></tr>
+      <tr><th>Resultado</th><th>Odd</th><th>Valor (R$)</th></tr>
+      <tr><td>Vitória NetDrp</td><td>9.80</td><td><input type="number" id="aposta1" value="0"></td></tr>
+      <tr><td>Vitória Helpnet</td><td>1.17</td><td><input type="number" id="aposta2" value="0"></td></tr>
+      <tr><td>Empate</td><td>3.10</td><td><input type="number" id="aposta3" value="0"></td></tr>
+      <tr><td>Jogo Não Acontece</td><td>8.00</td><td><input type="number" id="aposta4" value="0"></td></tr>
     </table>
     <button onclick="registrarAposta()">Registrar Aposta</button>
     <div class="resultado" id="resultado"></div>
   </div>
 
-  <div class="historico" id="historico">
+  <div class="historico">
     <h3>Histórico de Apostas</h3>
     <div id="listaApostas"></div>
     <h4>Quantidade de apostadores por odd:</h4>
     <ul id="contagemOdds"></ul>
   </div>
 
-  <script>
-    let apostasRegistradas = JSON.parse(localStorage.getItem("apostasRegistradas")) || [];
-    let contagemOdds = JSON.parse(localStorage.getItem("contagemOdds")) || { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    function registrarAposta() {
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6clNhC556ywHd1S81GpvMw0WmNTufHN8",
+      authDomain: "bet-help-net.firebaseapp.com",
+      projectId: "bet-help-net",
+      storageBucket: "bet-help-net.firebasestorage.app",
+      messagingSenderId: "1024764738376",
+      appId: "1:1024764738376:web:e0d37619d845e828ddd17d"
+    };
+
+    // Inicializar Firebase e Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function registrarAposta() {
       const nome = document.getElementById('nome').value.trim();
       const aposta1 = parseFloat(document.getElementById('aposta1').value || 0);
       const aposta2 = parseFloat(document.getElementById('aposta2').value || 0);
       const aposta3 = parseFloat(document.getElementById('aposta3').value || 0);
       const aposta4 = parseFloat(document.getElementById('aposta4').value || 0);
 
-      if (!nome) {
-        alert("Digite o nome do apostador!");
-        return;
-      }
-
-      if (aposta1 + aposta2 + aposta3 + aposta4 === 0) {
-        alert("Digite pelo menos um valor de aposta!");
-        return;
-      }
+      if (!nome) return alert("Digite o nome do apostador!");
+      if (aposta1 + aposta2 + aposta3 + aposta4 === 0) return alert("Digite pelo menos um valor de aposta!");
 
       const retorno1 = aposta1 * 9.80;
       const retorno2 = aposta2 * 1.17;
       const retorno3 = aposta3 * 3.10;
       const retorno4 = aposta4 * 8.00;
 
-      // Salvar aposta no histórico
-      apostasRegistradas.push({
+      await addDoc(collection(db, "apostas"), {
         nome,
-        apostas: [aposta1, aposta2, aposta3, aposta4]
+        apostas: [aposta1, aposta2, aposta3, aposta4],
+        timestamp: new Date()
       });
 
-      // Atualizar contagem por odd
-      if (aposta1 > 0) contagemOdds.odd1++;
-      if (aposta2 > 0) contagemOdds.odd2++;
-      if (aposta3 > 0) contagemOdds.odd3++;
-      if (aposta4 > 0) contagemOdds.odd4++;
-
-      // Salvar no localStorage
-      localStorage.setItem("apostasRegistradas", JSON.stringify(apostasRegistradas));
-      localStorage.setItem("contagemOdds", JSON.stringify(contagemOdds));
-
-      // Exibir resultado individual
-      let mensagem = `<strong>${nome}</strong><br>
-        Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>
-        Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>
-        Se houver empate: R$ ${retorno3.toFixed(2)}<br>
-        Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}`;
-
-      document.getElementById('resultado').innerHTML = mensagem;
-
-      // Limpar campos
-      document.getElementById('nome').value = "";
-      document.getElementById('aposta1').value = 0;
-      document.getElementById('aposta2').value = 0;
-      document.getElementById('aposta3').value = 0;
-      document.getElementById('aposta4').value = 0;
-
-      atualizarHistorico();
-    }
-
-    function atualizarHistorico() {
-      const lista = document.getElementById('listaApostas');
-      lista.innerHTML = apostasRegistradas.map(a => {
-        return `<p><strong>${a.nome}</strong> → NetDrp: R$${a.apostas[0]} | Helpnet: R$${a.apostas[1]} | Empate: R$${a.apostas[2]} | Não acontece: R$${a.apostas[3]}</p>`;
-      }).join("");
-
-      const contagem = document.getElementById('contagemOdds');
-      contagem.innerHTML = `
-        <li>Vitória NetDrp (9.80): ${contagemOdds.odd1} apostadores</li>
-        <li>Vitória Helpnet (1.17): ${contagemOdds.odd2} apostadores</li>
-        <li>Empate (3.10): ${contagemOdds.odd3} apostadores</li>
-        <li>Jogo Não Acontece (8.00): ${contagemOdds.odd4} apostadores</li>
-      `;
-    }
-
-    // Carregar histórico ao abrir a página
-    atualizarHistorico();
-  </script>
-</body>
-</html>
+      document.getE
