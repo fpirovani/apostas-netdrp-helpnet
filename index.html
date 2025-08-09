@@ -94,7 +94,7 @@
       </tr>
       <tr>
         <td>Vitória NetDrp</td>
-        <td>9.80</td>
+        <td>2.80</td>
         <td><input type="number" id="aposta1" value="0"></td>
       </tr>
       <tr>
@@ -125,8 +125,8 @@
   </div>
 
   <script>
-    let apostasRegistradas = [];
-    let contagemOdds = { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
+    let apostasRegistradas = JSON.parse(localStorage.getItem("apostasRegistradas")) || [];
+    let contagemOdds = JSON.parse(localStorage.getItem("contagemOdds")) || { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
 
     function registrarAposta() {
       const nome = document.getElementById('nome').value.trim();
@@ -145,7 +145,7 @@
         return;
       }
 
-      const retorno1 = aposta1 * 9.80;
+      const retorno1 = aposta1 * 2.80;
       const retorno2 = aposta2 * 1.17;
       const retorno3 = aposta3 * 3.10;
       const retorno4 = aposta4 * 8.00;
@@ -162,6 +162,10 @@
       if (aposta3 > 0) contagemOdds.odd3++;
       if (aposta4 > 0) contagemOdds.odd4++;
 
+      // Salvar no localStorage
+      localStorage.setItem("apostasRegistradas", JSON.stringify(apostasRegistradas));
+      localStorage.setItem("contagemOdds", JSON.stringify(contagemOdds));
+
       // Exibir resultado individual
       let mensagem = `<strong>${nome}</strong><br>
         Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>
@@ -170,6 +174,13 @@
         Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}`;
 
       document.getElementById('resultado').innerHTML = mensagem;
+
+      // Limpar campos
+      document.getElementById('nome').value = "";
+      document.getElementById('aposta1').value = 0;
+      document.getElementById('aposta2').value = 0;
+      document.getElementById('aposta3').value = 0;
+      document.getElementById('aposta4').value = 0;
 
       atualizarHistorico();
     }
@@ -182,12 +193,15 @@
 
       const contagem = document.getElementById('contagemOdds');
       contagem.innerHTML = `
-        <li>Vitória NetDrp (9.80): ${contagemOdds.odd1} apostadores</li>
+        <li>Vitória NetDrp (2.80): ${contagemOdds.odd1} apostadores</li>
         <li>Vitória Helpnet (1.17): ${contagemOdds.odd2} apostadores</li>
         <li>Empate (3.10): ${contagemOdds.odd3} apostadores</li>
         <li>Jogo Não Acontece (8.00): ${contagemOdds.odd4} apostadores</li>
       `;
     }
+
+    // Carregar histórico ao abrir a página
+    atualizarHistorico();
   </script>
 </body>
 </html>
