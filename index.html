@@ -70,7 +70,7 @@
       <tr><td colspan="3"><input type="text" id="nome" placeholder="Digite seu nome"></td></tr>
 
       <tr><th>Resultado</th><th>Odd</th><th>Valor da Aposta (R$)</th></tr>
-      <tr><td>Vitória NetDrp</td><td>2.80</td><td><input type="number" id="aposta1" min="0" step="0.01" value="0"></td></tr>
+      <tr><td>Vitória NetDrp</td><td>9.80</td><td><input type="number" id="aposta1" min="0" step="0.01" value="0"></td></tr>
       <tr><td>Vitória Helpnet</td><td>1.17</td><td><input type="number" id="aposta2" min="0" step="0.01" value="0"></td></tr>
       <tr><td>Empate</td><td>3.10</td><td><input type="number" id="aposta3" min="0" step="0.01" value="0"></td></tr>
       <tr><td>Jogo Não Acontece</td><td>8.00</td><td><input type="number" id="aposta4" min="0" step="0.01" value="0"></td></tr>
@@ -93,10 +93,38 @@
   </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzGtR0pMk2e_T97hg5mRC7k5heJWc9wzhRf5JWioZA1LnX9HqtCgHJiWoCN9mpvgoEF/exec"; // <<===== substitua pela URL do seu Web App
+const API_URL = "https://script.google.com/macros/s/AKfycbwWG-vmY-nz2y25LV-nFzoOIWy1KC0_R2dl0wdu9TOUsi3yFtvEYxCUxAyyZF_BQZtg/exec"; // cole a URL gerada no Apps Script
+
+// Para buscar o histórico
+async function carregarHistorico() {
+  try {
+    const response = await fetch(API_URL);
+    const dados = await response.json();
+    console.log("Histórico:", dados);
+    // Aqui você pode preencher sua tabela HTML com os dados
+  } catch (error) {
+    console.error("Erro ao carregar histórico:", error);
+  }
+}
+
+// Para salvar um registro
+async function salvarRegistro(data, valor, descricao) {
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ data, valor, descricao })
+    });
+    const result = await response.json();
+    console.log("Registro salvo:", result);
+  } catch (error) {
+    console.error("Erro ao salvar registro:", error);
+  }
+}
+
 
 // Odds constantes
-const ODD1 = 2.80, ODD2 = 1.17, ODD3 = 3.10, ODD4 = 8.00;
+const ODD1 = 9.80, ODD2 = 1.17, ODD3 = 3.10, ODD4 = 8.00;
 
 const btnRegistrar = document.getElementById("btnRegistrar");
 const btnReset = document.getElementById("btnReset");
@@ -211,7 +239,7 @@ async function carregarHistorico() {
 
     const contagemEl = document.getElementById('contagemOdds');
     contagemEl.innerHTML = `
-      <li>Vitória NetDrp (2.80): ${contagem.odd1} apostadores</li>
+      <li>Vitória NetDrp (9.80): ${contagem.odd1} apostadores</li>
       <li>Vitória Helpnet (1.17): ${contagem.odd2} apostadores</li>
       <li>Empate (3.10): ${contagem.odd3} apostadores</li>
       <li>Jogo Não Acontece (8.00): ${contagem.odd4} apostadores</li>
