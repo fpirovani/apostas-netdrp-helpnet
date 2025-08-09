@@ -137,4 +137,52 @@
         timestamp: new Date()
       });
 
-      document.getE
+      document.getElementById('resultado').innerHTML = `
+        <strong>${nome}</strong><br>
+        Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>
+        Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>
+        Se houver empate: R$ ${retorno3.toFixed(2)}<br>
+        Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}
+      `;
+
+      document.getElementById('nome').value = "";
+      document.getElementById('aposta1').value = 0;
+      document.getElementById('aposta2').value = 0;
+      document.getElementById('aposta3').value = 0;
+      document.getElementById('aposta4').value = 0;
+    }
+
+    function atualizarHistorico() {
+      const lista = document.getElementById('listaApostas');
+      const contagem = document.getElementById('contagemOdds');
+      
+      onSnapshot(collection(db, "apostas"), snapshot => {
+        let apostas = [];
+        let contagemOdds = { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          apostas.push(data);
+          if (data.apostas[0] > 0) contagemOdds.odd1++;
+          if (data.apostas[1] > 0) contagemOdds.odd2++;
+          if (data.apostas[2] > 0) contagemOdds.odd3++;
+          if (data.apostas[3] > 0) contagemOdds.odd4++;
+        });
+
+        lista.innerHTML = apostas.map(a =>
+          `<p><strong>${a.nome}</strong> → NetDrp: R$${a.apostas[0]} | Helpnet: R$${a.apostas[1]} | Empate: R$${a.apostas[2]} | Não acontece: R$${a.apostas[3]}</p>`
+        ).join("");
+
+        contagem.innerHTML = `
+          <li>Vitória NetDrp (9.80): ${contagemOdds.odd1} apostadores</li>
+          <li>Vitória Helpnet (1.17): ${contagemOdds.odd2} apostadores</li>
+          <li>Empate (3.10): ${contagemOdds.odd3} apostadores</li>
+          <li>Jogo Não Acontece (8.00): ${contagemOdds.odd4} apostadores</li>
+        `;
+      });
+    }
+
+    atualizarHistorico();
+  </script>
+</body>
+</html>
