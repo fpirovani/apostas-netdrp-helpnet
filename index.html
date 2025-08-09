@@ -44,14 +44,22 @@
       padding: 12px;
       border-bottom: 1px solid #ccc;
     }
-    input[type="number"] {
-      width: 80px;
+    input[type="number"], input[type="text"] {
       padding: 5px;
+      width: 90%;
     }
     .resultado {
       margin-top: 20px;
-      font-size: 1.2em;
+      font-size: 1.1em;
       color: #0f0;
+      text-align: left;
+    }
+    .historico {
+      margin-top: 30px;
+      background: #333;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: left;
     }
   </style>
 </head>
@@ -73,6 +81,12 @@
   <div class="odds-table">
     <h2>Faça sua simulação na Help Net ou Net DRP</h2>
     <table>
+      <tr>
+        <th colspan="3">Nome do Apostador</th>
+      </tr>
+      <tr>
+        <td colspan="3"><input type="text" id="nome" placeholder="Digite seu nome"></td>
+      </tr>
       <tr>
         <th>Resultado</th>
         <th>Odd</th>
@@ -99,28 +113,80 @@
         <td><input type="number" id="aposta4" value="0"></td>
       </tr>
     </table>
-    <button onclick="calcularRetorno()">Calcular Retorno</button>
+    <button onclick="registrarAposta()">Registrar Aposta</button>
     <div class="resultado" id="resultado"></div>
   </div>
 
+  <div class="historico" id="historico">
+    <h3>Histórico de Apostas</h3>
+    <div id="listaApostas"></div>
+    <h4>Quantidade de apostadores por odd:</h4>
+    <ul id="contagemOdds"></ul>
+  </div>
+
   <script>
-    function calcularRetorno() {
+    let apostasRegistradas = [];
+    let contagemOdds = { odd1: 0, odd2: 0, odd3: 0, odd4: 0 };
+
+    function registrarAposta() {
+      const nome = document.getElementById('nome').value.trim();
       const aposta1 = parseFloat(document.getElementById('aposta1').value || 0);
       const aposta2 = parseFloat(document.getElementById('aposta2').value || 0);
       const aposta3 = parseFloat(document.getElementById('aposta3').value || 0);
       const aposta4 = parseFloat(document.getElementById('aposta4').value || 0);
+
+      if (!nome) {
+        alert("Digite o nome do apostador!");
+        return;
+      }
+
+      if (aposta1 + aposta2 + aposta3 + aposta4 === 0) {
+        alert("Digite pelo menos um valor de aposta!");
+        return;
+      }
 
       const retorno1 = aposta1 * 2.80;
       const retorno2 = aposta2 * 1.17;
       const retorno3 = aposta3 * 3.10;
       const retorno4 = aposta4 * 8.00;
 
-      let mensagem = `Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>` +
-                     `Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>` +
-                     `Se houver empate: R$ ${retorno3.toFixed(2)}<br>` +
-                     `Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}`;
+      // Salvar aposta no histórico
+      apostasRegistradas.push({
+        nome,
+        apostas: [aposta1, aposta2, aposta3, aposta4]
+      });
+
+      // Atualizar contagem por odd
+      if (aposta1 > 0) contagemOdds.odd1++;
+      if (aposta2 > 0) contagemOdds.odd2++;
+      if (aposta3 > 0) contagemOdds.odd3++;
+      if (aposta4 > 0) contagemOdds.odd4++;
+
+      // Exibir resultado individual
+      let mensagem = `<strong>${nome}</strong><br>
+        Se NetDrp vencer: R$ ${retorno1.toFixed(2)}<br>
+        Se Helpnet vencer: R$ ${retorno2.toFixed(2)}<br>
+        Se houver empate: R$ ${retorno3.toFixed(2)}<br>
+        Se o jogo não acontecer: R$ ${retorno4.toFixed(2)}`;
 
       document.getElementById('resultado').innerHTML = mensagem;
+
+      atualizarHistorico();
+    }
+
+    function atualizarHistorico() {
+      const lista = document.getElementById('listaApostas');
+      lista.innerHTML = apostasRegistradas.map(a => {
+        return `<p><strong>${a.nome}</strong> → NetDrp: R$${a.apostas[0]} | Helpnet: R$${a.apostas[1]} | Empate: R$${a.apostas[2]} | Não acontece: R$${a.apostas[3]}</p>`;
+      }).join("");
+
+      const contagem = document.getElementById('contagemOdds');
+      contagem.innerHTML = `
+        <li>Vitória NetDrp (2.80): ${contagemOdds.odd1} apostadores</li>
+        <li>Vitória Helpnet (1.17): ${contagemOdds.odd2} apostadores</li>
+        <li>Empate (3.10): ${contagemOdds.odd3} apostadores</li>
+        <li>Jogo Não Acontece (8.00): ${contagemOdds.odd4} apostadores</li>
+      `;
     }
   </script>
 </body>
